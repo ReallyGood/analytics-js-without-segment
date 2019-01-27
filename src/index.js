@@ -9,14 +9,14 @@ import { getSnippet } from './snippet.js'
  * Validate options and output logs.
  */
 export const renderAnalytics = (options) => {
-  const { cdnUrl, services } = options
+  const { cdnUrl, services, noDevMode } = options
   // validate parameters
   if (services===undefined) throw new Error('please pass "services"-option')
   // DEVELOPMENT
   // in development, stub out all analytics.js methods
   // this prevents "dirtying" your real analytics with local testing/traffic
   const { NODE_ENV = 'development' } = process.env
-  if (NODE_ENV === 'development') {
+  if (!noDevMode && NODE_ENV === 'development') {
     log('development mode detected! NOT sending data to analytics-tools')
     return `
       (function () {
@@ -34,7 +34,7 @@ export const renderAnalytics = (options) => {
     `
   }
   // PRODUCTION
-  log('production mode! SENDING data to analytics-tools')
+  if (!noDevMode) log('production mode! SENDING data to analytics-tools')
   const snippet = getSnippet()
   const theTemplate = template(snippet)
   const sourceWithValues = theTemplate({
